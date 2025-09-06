@@ -1,5 +1,51 @@
-# Perceval_Quandela_Training
-Introduction à Perceval
+# Perceval Basics
+
+## 1. Fock states
+```python
+import perceval as pcvl
+
+fock_state = pcvl.BasicState("|1,1>") # Equivalent à fock_state = pcvl.BasicState("[1,1]")
+print("number of modes", fock_state.m)
+print("number of photons", fock_state.n)
+print("the state", fock_state)
+```
+
+## 2. Building a Circuit
+```python
+import perceval as pcvl
+
+#OPTION 1
+circuit = pcvl.Circuit(n) #n nombre de modes
+circuit.add((0, 1), pcvl.BS())
+# Premier Beam splitter entre les deux modes
+circuit.add((0, 1), pcvl.BS())
+# Phase shifter sur le mode 0
+circuit.add(0, pcvl.PS(phi=value))
+# Deuxième BS entre les deux modes
+circuit.add((0, 1), pcvl.BS())
+# Affiche le circuit
+pcvl.pdisplay(circuit)
+
+# OPTION 2 
+circuit = pcvl.Circuit(2) // pcvl.BS() // pcvl.PS(phi=value) // pcvl.BS()
+```
+
+## 3. Noise 
+
+Dans Perceval, NoiseModel permet d'ajouter du bruit à la simulation
+```python
+noise_model = pcvl.NoiseModel(
+    brightness=1,          # Intensité ou taux de génération des photons
+    g2=0,                  # Paramètre de cohérence à deux photons (photons supplémentaires possibles si >0)
+    indistinguishability=1, # Indiscernabilité des photons (1 = parfait)
+    transmittance=1,       # Fraction de photons passant à travers un élément optique sans perte
+    phase_imprecision=0    # Erreurs sur la phase introduites par les composants
+)
+```
+
+
+# Hello world Perceval
+Premier programme Perceval
 
 ---
 
@@ -121,3 +167,5 @@ belenos = pcvl.RemoteProcessor("qpu:belenos")
 perf_belenos = belenos.performance
 print(f"The Performance of Belenos is: {perf_belenos}")
 ```
+
+
