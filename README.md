@@ -31,7 +31,7 @@ remote_config = RemoteConfig()
 remote_config.set_token("ENTER_YOUR_TOKEN_HERE")
 
 # Option 2 : récupérer le token depuis le systeme
-# Le token ne figure pas dans le code
+# Pour enregistrer le token depuis powershell: setx QUANDELA_TOKEN "TON_TOKEN_ICI"
 import os
 token = os.environ.get("QUANDELA_TOKEN")
 remote_config.set_token(token)  # Le token ne figure pas dans le code
@@ -61,4 +61,63 @@ remote_sampler.default_job_name = "Hello World"
 remote_job = remote_sampler.sample_count.execute_async(nsamples)
 print(remote_job.id)
 
+```
+## 6. Monitor Job Progress
+
+Ajout d'une barre de progression pour voir l'avancement du programme
+
+```python
+
+previous_prog = 0 
+with tqdm(total=1, bar_format='{desc}{percentage:3.0f}%|{bar}|') as tq:
+    tq.set_description(f'Get {nsamples} samples from {remote_processor.name}')
+    while not remote_job.is_complete:
+        tq.update(remote_job.status.progress/100-previous_prog)
+        previous_prog = remote_job.status.progress/100
+        time.sleep(1) # Pause dans le programme
+    tq.update(1-previous_prog)
+    tq.close()
+
+print(f"Job status = {remote_job.status()}")
+
+```
+
+## 7. Retrieve and Display Results
+On affiche le résultat
+
+```python
+results = remote_job.get_results()
+pcvl.pdisplay(results['results']) # afficher les résultats de manière lisible et ordonnée
+```
+
+Avec le job id on va pouvoir retrouver les résultats d'un job déjà lancé, terminé ou en cours. Il n’exécute pas le circuit à nouveau.
+
+```python
+job_id = "put_your_job_id_here" 
+remote_processor = RemoteProcessor("put_your_platform_name_here")
+remote_job = remote_processor.resume_job(job_id)
+
+results = remote_job.get_results()   
+pcvl.pdisplay(results['results'])
+
+```
+## 8. Extra Tools
+
+Visualiser le circuit 
+
+```python
+pcvl.pdisplay(circuit)
+```
+
+Questionner les QPUs et afficher leurs performances.
+Clock indique combien de photons sont générés par seconde (80 MHz signifie 80 millions de photons par seconde).
+
+```python
+ascella = pcvl.RemoteProcessor("qpu:ascella")
+perf_ascella = ascella.performance
+print(f"The Performance of Ascella is: {perf_ascella}")
+
+belenos = pcvl.RemoteProcessor("qpu:belenos")
+perf_belenos = belenos.performance
+print(f"The Performance of Belenos is: {perf_belenos}")
 ```
